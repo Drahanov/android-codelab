@@ -1,7 +1,7 @@
 package com.sap.codelab
 
 import android.app.Application
-import com.sap.codelab.data.repository.Repository
+import com.sap.codelab.data.repository.MemoRepositoryImpl
 
 /**
  * Extension of the Android Application class.
@@ -9,6 +9,6 @@ import com.sap.codelab.data.repository.Repository
 internal class App : Application() {
     override fun onCreate() {
         super.onCreate()
-        Repository.initialize(this)
+        MemoRepositoryImpl.initialize(this)
     }
 }

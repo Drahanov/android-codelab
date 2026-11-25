@@ -7,7 +7,6 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.Menu
 import android.view.MenuItem
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.coroutineScope
 import com.sap.codelab.R
@@ -27,11 +26,6 @@ internal class Home : AppCompatActivity() {
     private lateinit var model: HomeViewModel
     private lateinit var menuItemShowAll: MenuItem
     private lateinit var menuItemShowOpen: MenuItem
-    private val createMemoLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == RESULT_OK) {
-            model.refreshMemos()
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,9 +39,8 @@ internal class Home : AppCompatActivity() {
 
         binding.fab.setOnClickListener {
             // Handles clicks on the FAB button > creates a new Memo
-            createMemoLauncher.launch(Intent(this@Home, CreateMemo::class.java))
+            startActivity(Intent(this@Home, CreateMemo::class.java))
         }
-        model.loadOpenMemos()
     }
 
     /**
@@ -60,7 +53,6 @@ internal class Home : AppCompatActivity() {
         }, { checkbox, isChecked ->
             // Implementation for when the user marks a memo as completed
             model.updateMemo(checkbox.tag as Memo, isChecked)
-            model.refreshMemos()
         })
         lifecycle.coroutineScope.launch {
             model.memos.collect { memos ->

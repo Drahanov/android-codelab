@@ -4,35 +4,28 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.sap.codelab.domain.model.Memo
+import kotlinx.coroutines.flow.Flow
 
 /**
- * The Dao representation of a Memo.
+ * Data access object for memos.
  */
 @Dao
 internal interface MemoDao {
 
-    /**
-     * @return all memos that are currently in the database.
-     */
     @Query("SELECT * FROM memo")
-    fun getAll(): List<Memo>
+    fun observeAll(): Flow<List<MemoEntity>>
 
-    /**
-     * @return all memos that are currently in the database and have not yet been marked as "done".
-     */
     @Query("SELECT * FROM memo WHERE isDone = 0")
-    fun getOpen(): List<Memo>
+    fun observeOpen(): Flow<List<MemoEntity>>
 
     /**
-     * Inserts the given Memo into the database. We currently do not support updating of memos.
+     * Inserts the given memo, replacing an existing one with the same id.
+     *
+     * @return the row id of the inserted memo.
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(memo: Memo)
+    suspend fun insert(memo: MemoEntity): Long
 
-    /**
-     * @return the memo whose id matches the given id.
-     */
     @Query("SELECT * FROM memo WHERE id = :memoId")
-    fun getMemoById(memoId: Long): Memo
+    suspend fun getMemoById(memoId: Long): MemoEntity?
 }

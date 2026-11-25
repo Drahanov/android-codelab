@@ -2,49 +2,43 @@ package com.sap.codelab.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sap.codelab.data.repository.MemoRepositoryImpl
 import com.sap.codelab.domain.model.Memo
-import com.sap.codelab.data.repository.Repository
-import com.sap.codelab.utils.coroutines.ScopeProvider
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /**
  * ViewModel for the Home Activity.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 internal class HomeViewModel : ViewModel() {
 
-    private var isShowAll = false
-    private val _memos: MutableStateFlow<List<Memo>> = MutableStateFlow(listOf())
-    val memos: StateFlow<List<Memo>> = _memos
+    private val showAll = MutableStateFlow(false)
 
     /**
-     * Loads all memos.
+     * The memos to display. Updates automatically when the filter or the underlying data changes.
+     */
+    val memos: StateFlow<List<Memo>> = showAll
+        .flatMapLatest { all -> if (all) MemoRepositoryImpl.observeAll() else MemoRepositoryImpl.observeOpen() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    /**
+     * Shows all memos.
      */
     fun loadAllMemos() {
-        isShowAll = true
-        viewModelScope.launch(Dispatchers.Default) {
-            _memos.value = Repository.getAll()
-        }
+        showAll.value = true
     }
 
     /**
-     * Loads all open (not done) memos.
+     * Shows only open (not done) memos.
      */
     fun loadOpenMemos() {
-        isShowAll = false
-        viewModelScope.launch(Dispatchers.Default) {
-            _memos.value = Repository.getOpen()
-        }
-    }
-
-    fun refreshMemos() {
-        if (isShowAll) {
-            loadAllMemos()
-        } else {
-            loadOpenMemos()
-        }
+        showAll.value = false
     }
 
     /**
@@ -54,11 +48,10 @@ internal class HomeViewModel : ViewModel() {
      * @param isChecked - whether the memo has been checked (marked as done).
      */
     fun updateMemo(memo: Memo, isChecked: Boolean) {
-        ScopeProvider.application.launch(Dispatchers.Default) {
-            // We'll only forward the update if the memo has been checked, since we don't offer to uncheck memos right now
-            if (isChecked) {
-                Repository.saveMemo(memo.copy(isDone = true))
-            }
+        // We'll only forward the update if the memo has been checked, since we don't offer to uncheck memos right now
+        if (!isChecked) return
+        viewModelScope.launch {
+            MemoRepositoryImpl.saveMemo(memo.copy(isDone = true))
         }
     }
 }
