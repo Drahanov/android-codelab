@@ -4,11 +4,10 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
-import androidx.lifecycle.lifecycleScope
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import com.sap.codelab.R
 import com.sap.codelab.databinding.ActivityCreateMemoBinding
-import kotlinx.coroutines.launch
+import com.sap.codelab.presentation.common.collectWhenStarted
 
 /**
  * Activity that allows a user to create a new Memo.
@@ -23,9 +22,7 @@ internal class CreateMemo : AppCompatActivity() {
         binding = ActivityCreateMemoBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
-        lifecycleScope.launch {
-            model.uiState.collect(::render)
-        }
+        collectWhenStarted(model.uiState, ::render)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

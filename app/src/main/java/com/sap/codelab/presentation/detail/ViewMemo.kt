@@ -4,11 +4,10 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import androidx.lifecycle.lifecycleScope
 import com.sap.codelab.R
 import com.sap.codelab.databinding.ActivityViewMemoBinding
 import com.sap.codelab.domain.model.Memo
-import kotlinx.coroutines.launch
+import com.sap.codelab.presentation.common.collectWhenStarted
 
 internal const val BUNDLE_MEMO_ID: String = "memoId"
 
@@ -25,15 +24,13 @@ internal class ViewMemo : AppCompatActivity() {
         binding = ActivityViewMemoBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
-        lifecycleScope.launch {
-            model.uiState.collect { state ->
-                when (state) {
-                    ViewMemoUiState.Loading -> Unit
-                    is ViewMemoUiState.Loaded -> updateUI(state.memo)
-                    ViewMemoUiState.NotFound -> {
-                        Toast.makeText(this@ViewMemo, R.string.memo_not_found, Toast.LENGTH_SHORT).show()
-                        finish()
-                    }
+        collectWhenStarted(model.uiState) { state ->
+            when (state) {
+                ViewMemoUiState.Loading -> Unit
+                is ViewMemoUiState.Loaded -> updateUI(state.memo)
+                ViewMemoUiState.NotFound -> {
+                    Toast.makeText(this@ViewMemo, R.string.memo_not_found, Toast.LENGTH_SHORT).show()
+                    finish()
                 }
             }
         }

@@ -1,44 +1,39 @@
 package com.sap.codelab.presentation.home
 
 import androidx.recyclerview.widget.RecyclerView
-import android.view.View
-import android.widget.CompoundButton
 import com.sap.codelab.databinding.RecyclerviewMemoBinding
 import com.sap.codelab.domain.model.Memo
 
 /**
- * View holder for Memos.
+ * View holder for Memos. Listeners are set once; they act on the memo currently bound.
  */
-internal class MemoViewHolder(private val binding: RecyclerviewMemoBinding) : RecyclerView.ViewHolder(binding.root) {
+internal class MemoViewHolder(
+    private val binding: RecyclerviewMemoBinding,
+    onClick: (Memo) -> Unit,
+    onMarkDone: (Memo) -> Unit,
+) : RecyclerView.ViewHolder(binding.root) {
+
+    private var memo: Memo? = null
+
+    init {
+        binding.root.setOnClickListener { memo?.let(onClick) }
+        binding.checkBox.setOnCheckedChangeListener { _, isChecked ->
+            // Only react to user input on open memos; bind() updates the checkbox without a listener call
+            val current = memo ?: return@setOnCheckedChangeListener
+            if (isChecked && !current.isDone) onMarkDone(current)
+        }
+    }
 
     /**
      * Updates the memo view with the given memo.
      */
-    fun update(memo: Memo, onClick: View.OnClickListener, onCheckboxChanged: CompoundButton.OnCheckedChangeListener) {
-        binding.run {
-            memoTitle.text = memo.title
-            memoText.text = memo.description
-        }
-        updateCheckbox(memo, onCheckboxChanged)
-        //This is needed if the user selects a given memo to show the detail screen
-        itemView.tag = memo
-        itemView.setOnClickListener(onClick)
-    }
-
-    /**
-     * Updates the checkbox view.
-     */
-    private fun updateCheckbox(memo: Memo, onCheckboxChanged: CompoundButton.OnCheckedChangeListener) {
-        // if the view is reused it will already have a listener already set on it. So in order this not to be called when the value is initialized
-        // we remove the listener and set it back.
-        binding.checkBox.apply {
-            setOnCheckedChangeListener(null)
-            isChecked = memo.isDone
-            // We only let the user edit the checkbox if the item has not been marked as "done"
-            isEnabled = !memo.isDone
-            // We need the memo if the user ticks the checkbox, so we can update the memo
-            tag = memo
-            setOnCheckedChangeListener(onCheckboxChanged)
-        }
+    fun bind(memo: Memo) {
+        this.memo = null // ignore the checkbox callback while (re)binding
+        binding.memoTitle.text = memo.title
+        binding.memoText.text = memo.description
+        binding.checkBox.isChecked = memo.isDone
+        // We only let the user edit the checkbox if the item has not been marked as "done"
+        binding.checkBox.isEnabled = !memo.isDone
+        this.memo = memo
     }
 }

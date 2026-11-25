@@ -8,14 +8,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.Menu
 import android.view.MenuItem
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import androidx.lifecycle.coroutineScope
 import com.sap.codelab.R
 import com.sap.codelab.databinding.ActivityHomeBinding
-import com.sap.codelab.domain.model.Memo
+import com.sap.codelab.presentation.common.collectWhenStarted
 import com.sap.codelab.presentation.create.CreateMemo
 import com.sap.codelab.presentation.detail.BUNDLE_MEMO_ID
 import com.sap.codelab.presentation.detail.ViewMemo
-import kotlinx.coroutines.launch
 
 /**
  * The main activity of the app. Shows a list of recorded memos and lets the user add new memos.
@@ -44,20 +42,13 @@ internal class Home : AppCompatActivity() {
      * Initializes the adapter and sets the needed callbacks.
      */
     private fun initializeAdapter() : MemoAdapter {
-        val adapter = MemoAdapter(mutableListOf(), { view ->
-            // Implementation for when the user selects a row to show the detail view
-            showMemo((view.tag as Memo).id)
-        }, { checkbox, isChecked ->
-            // Implementation for when the user marks a memo as completed
-            if (isChecked) {
-                model.markDone(checkbox.tag as Memo)
-            }
-        })
-        lifecycle.coroutineScope.launch {
-            model.uiState.collect { state ->
-                adapter.setItems(state.memos)
-                invalidateOptionsMenu()
-            }
+        val adapter = MemoAdapter(
+            onClick = { memo -> showMemo(memo.id) },
+            onMarkDone = model::markDone,
+        )
+        collectWhenStarted(model.uiState) { state ->
+            adapter.submitList(state.memos)
+            invalidateOptionsMenu()
         }
         return adapter
     }
