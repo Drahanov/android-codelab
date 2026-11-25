@@ -24,8 +24,6 @@ internal class Home : AppCompatActivity() {
 
     private lateinit var binding: ActivityHomeBinding
     private val model: HomeViewModel by viewModel()
-    private lateinit var menuItemShowAll: MenuItem
-    private lateinit var menuItemShowOpen: MenuItem
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,11 +49,14 @@ internal class Home : AppCompatActivity() {
             showMemo((view.tag as Memo).id)
         }, { checkbox, isChecked ->
             // Implementation for when the user marks a memo as completed
-            model.updateMemo(checkbox.tag as Memo, isChecked)
+            if (isChecked) {
+                model.markDone(checkbox.tag as Memo)
+            }
         })
         lifecycle.coroutineScope.launch {
-            model.memos.collect { memos ->
-                adapter.setItems(memos)
+            model.uiState.collect { state ->
+                adapter.setItems(state.memos)
+                invalidateOptionsMenu()
             }
         }
         return adapter
@@ -85,9 +86,15 @@ internal class Home : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_home, menu)
-        menuItemShowAll = menu.findItem(R.id.action_show_all)
-        menuItemShowOpen = menu.findItem(R.id.action_show_open)
         return true
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        // Only offer the filter that is not currently active
+        val showAll = model.uiState.value.showAll
+        menu.findItem(R.id.action_show_all).isVisible = !showAll
+        menu.findItem(R.id.action_show_open).isVisible = showAll
+        return super.onPrepareOptionsMenu(menu)
     }
 
     /**
@@ -96,17 +103,11 @@ internal class Home : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_show_all -> {
-                model.loadAllMemos()
-                //Switch available menu options
-                menuItemShowAll.isVisible = false
-                menuItemShowOpen.isVisible = true
+                model.setShowAll(true)
                 true
             }
             R.id.action_show_open -> {
-                model.loadOpenMemos()
-                //Switch available menu options
-                menuItemShowOpen.isVisible = false
-                menuItemShowAll.isVisible = true
+                model.setShowAll(false)
                 true
             }
 

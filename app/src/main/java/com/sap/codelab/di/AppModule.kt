@@ -9,25 +9,13 @@ import com.sap.codelab.domain.repository.MemoRepository
 import com.sap.codelab.presentation.create.CreateMemoViewModel
 import com.sap.codelab.presentation.detail.ViewMemoViewModel
 import com.sap.codelab.presentation.home.HomeViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
-import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
-import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
-/**
- * Qualifier for a scope that lives as long as the application process. Use it for work that must
- * outlive a screen, e.g. finishing a save after the activity is closed.
- */
-internal val ApplicationScope = named("ApplicationScope")
-
 internal val dataModule = module {
-    single(ApplicationScope) { CoroutineScope(SupervisorJob() + Dispatchers.Default) }
     single {
         Room.databaseBuilder(androidContext(), AppDatabase::class.java, DATABASE_NAME)
             .addMigrations(MIGRATION_1_2)
@@ -40,7 +28,7 @@ internal val dataModule = module {
 internal val presentationModule = module {
     viewModelOf(::HomeViewModel)
     viewModelOf(::ViewMemoViewModel)
-    viewModel { CreateMemoViewModel(get(), get(ApplicationScope)) }
+    viewModelOf(::CreateMemoViewModel)
 }
 
 internal val appModules = listOf(dataModule, presentationModule)

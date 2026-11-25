@@ -4,11 +4,11 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
-import androidx.annotation.StringRes
+import androidx.lifecycle.lifecycleScope
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import com.sap.codelab.R
 import com.sap.codelab.databinding.ActivityCreateMemoBinding
-import com.sap.codelab.utils.extensions.empty
+import kotlinx.coroutines.launch
 
 /**
  * Activity that allows a user to create a new Memo.
@@ -23,6 +23,9 @@ internal class CreateMemo : AppCompatActivity() {
         binding = ActivityCreateMemoBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
+        lifecycleScope.launch {
+            model.uiState.collect(::render)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -45,34 +48,22 @@ internal class CreateMemo : AppCompatActivity() {
     }
 
     /**
-     * Saves the memo if the input is valid; otherwise shows the corresponding error messages.
+     * Passes the current input to the ViewModel, which validates and saves it.
      */
     private fun saveMemo() {
         binding.contentCreateMemo.run {
-            model.updateMemo(memoTitle.text.toString(), memoDescription.text.toString())
-            if (model.isMemoValid()) {
-                model.saveMemo()
-                setResult(RESULT_OK)
-                finish()
-            } else {
-                memoTitleContainer.error = getErrorMessage(model.hasTitleError(), R.string.memo_title_empty_error)
-                memoDescription.error = getErrorMessage(model.hasTextError(), R.string.memo_text_empty_error)
-            }
+            model.save(memoTitle.text.toString(), memoDescription.text.toString())
         }
     }
 
-    /**
-     * Returns the error message if there is an error, or an empty string otherwise.
-     *
-     * @param hasError          - whether there is an error.
-     * @param errorMessageResId - the resource id of the error message to show.
-     * @return the error message if there is an error, or an empty string otherwise.
-     */
-    private fun getErrorMessage(hasError: Boolean, @StringRes errorMessageResId: Int): String {
-        return if (hasError) {
-            getString(errorMessageResId)
-        } else {
-            String.empty()
+    private fun render(state: CreateMemoUiState) {
+        if (state.isSaved) {
+            finish()
+            return
+        }
+        binding.contentCreateMemo.run {
+            memoTitleContainer.error = if (state.titleError) getString(R.string.memo_title_empty_error) else null
+            memoDescription.error = if (state.descriptionError) getString(R.string.memo_text_empty_error) else null
         }
     }
 }

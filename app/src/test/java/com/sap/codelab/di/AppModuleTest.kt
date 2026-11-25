@@ -1,5 +1,6 @@
 package com.sap.codelab.di
 
+import androidx.lifecycle.SavedStateHandle
 import org.junit.Test
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.dsl.module
@@ -14,6 +15,7 @@ class AppModuleTest {
 
     @Test
     fun `koin graph is complete`() {
-        module { includes(appModules) }.verify()
+        // SavedStateHandle is provided by the ViewModel framework at runtime, not by our modules
+        module { includes(appModules) }.verify(extraTypes = listOf(SavedStateHandle::class))
     }
 }

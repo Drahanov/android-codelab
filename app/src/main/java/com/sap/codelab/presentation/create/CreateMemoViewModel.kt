@@ -1,52 +1,51 @@
 package com.sap.codelab.presentation.create
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.sap.codelab.domain.model.Memo
 import com.sap.codelab.domain.repository.MemoRepository
-import com.sap.codelab.utils.extensions.empty
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
- * ViewModel for matching CreateMemo view. Handles user interactions.
+ * UI state of the CreateMemo screen.
  *
- * @param applicationScope - used for saving, so the save completes even though the activity finishes right away.
+ * @property isSaved true once the memo has been stored; the screen should close.
  */
-internal class CreateMemoViewModel(
-    private val repository: MemoRepository,
-    private val applicationScope: CoroutineScope,
-) : ViewModel() {
+internal data class CreateMemoUiState(
+    val titleError: Boolean = false,
+    val descriptionError: Boolean = false,
+    val isSaving: Boolean = false,
+    val isSaved: Boolean = false,
+)
 
-    private var memo = Memo(title = String.empty(), description = String.empty())
+/**
+ * ViewModel for matching CreateMemo view. Handles user interactions.
+ */
+internal class CreateMemoViewModel(private val repository: MemoRepository) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(CreateMemoUiState())
+    val uiState: StateFlow<CreateMemoUiState> = _uiState.asStateFlow()
 
     /**
-     * Saves the memo in it's current state.
+     * Validates the input and saves the memo if it is valid; otherwise exposes the errors in [uiState].
      */
-    fun saveMemo() {
-        applicationScope.launch {
-            repository.saveMemo(memo)
+    fun save(title: String, description: String) {
+        val current = _uiState.value
+        if (current.isSaving || current.isSaved) return
+
+        val titleError = title.isBlank()
+        val descriptionError = description.isBlank()
+        val isValid = !titleError && !descriptionError
+        _uiState.update { it.copy(titleError = titleError, descriptionError = descriptionError, isSaving = isValid) }
+        if (!isValid) return
+
+        viewModelScope.launch {
+            repository.saveMemo(Memo(title = title, description = description))
+            _uiState.update { it.copy(isSaving = false, isSaved = true) }
         }
     }
-
-    /**
-     * Call this method to update the memo. This is usually needed when the user changed his input.
-     */
-    fun updateMemo(title: String, description: String) {
-        memo = Memo(title = title, description = description)
-    }
-
-    /**
-     * @return true if the title and content are not blank; false otherwise.
-     */
-    fun isMemoValid(): Boolean = memo.title.isNotBlank() && memo.description.isNotBlank()
-
-    /**
-     * @return true if the memo text is blank, false otherwise.
-     */
-    fun hasTextError() = memo.description.isBlank()
-
-    /**
-     * @return true if the memo title is blank, false otherwise.
-     */
-    fun hasTitleError() = memo.title.isBlank()
 }

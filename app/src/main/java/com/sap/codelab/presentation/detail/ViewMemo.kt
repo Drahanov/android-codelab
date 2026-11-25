@@ -1,9 +1,11 @@
 package com.sap.codelab.presentation.detail
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import androidx.lifecycle.lifecycleScope
+import com.sap.codelab.R
 import com.sap.codelab.databinding.ActivityViewMemoBinding
 import com.sap.codelab.domain.model.Memo
 import kotlinx.coroutines.launch
@@ -23,19 +25,17 @@ internal class ViewMemo : AppCompatActivity() {
         binding = ActivityViewMemoBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
-        // Initialize views with the passed memo id
-        if (savedInstanceState == null) {
-            // Observe the memo state flow for changes
-            lifecycleScope.launch {
-                model.memo.collect { value ->
-                    value?.let { memo ->
-                        // Update the UI whenever the memo changes
-                        updateUI(memo)
+        lifecycleScope.launch {
+            model.uiState.collect { state ->
+                when (state) {
+                    ViewMemoUiState.Loading -> Unit
+                    is ViewMemoUiState.Loaded -> updateUI(state.memo)
+                    ViewMemoUiState.NotFound -> {
+                        Toast.makeText(this@ViewMemo, R.string.memo_not_found, Toast.LENGTH_SHORT).show()
+                        finish()
                     }
                 }
             }
-            val id = intent.getLongExtra(BUNDLE_MEMO_ID, -1)
-            model.loadMemo(id)
         }
     }
 

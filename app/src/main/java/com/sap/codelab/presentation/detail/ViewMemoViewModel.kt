@@ -1,27 +1,38 @@
 package com.sap.codelab.presentation.detail
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sap.codelab.domain.repository.MemoRepository
 import com.sap.codelab.domain.model.Memo
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.sap.codelab.domain.repository.MemoRepository
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.stateIn
 
 /**
- * ViewModel for matching ViewMemo view.
+ * UI state of the ViewMemo screen.
  */
-internal class ViewMemoViewModel(private val repository: MemoRepository) : ViewModel() {
+internal sealed interface ViewMemoUiState {
+    data object Loading : ViewMemoUiState
+    data class Loaded(val memo: Memo) : ViewMemoUiState
 
-    private val _memo: MutableStateFlow<Memo?> = MutableStateFlow(null)
-    val memo: StateFlow<Memo?> = _memo
+    /** The memo does not exist (anymore), e.g. when opened from an outdated notification. */
+    data object NotFound : ViewMemoUiState
+}
 
-    /**
-     * Loads the memo whose id matches the given memoId from the database.
-     */
-    fun loadMemo(memoId: Long) {
-        viewModelScope.launch {
-            _memo.value = repository.getMemoById(memoId)
-        }
-    }
+/**
+ * ViewModel for matching ViewMemo view. The memo id comes from the intent extras via [SavedStateHandle].
+ */
+internal class ViewMemoViewModel(
+    repository: MemoRepository,
+    savedStateHandle: SavedStateHandle,
+) : ViewModel() {
+
+    private val memoId: Long? = savedStateHandle[BUNDLE_MEMO_ID]
+
+    val uiState: StateFlow<ViewMemoUiState> = flow {
+        val memo = memoId?.let { repository.getMemoById(it) }
+        emit(if (memo != null) ViewMemoUiState.Loaded(memo) else ViewMemoUiState.NotFound)
+    }.stateIn(viewModelScope, SharingStarted.Lazily, ViewMemoUiState.Loading)
 }
