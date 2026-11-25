@@ -1,7 +1,9 @@
 package com.sap.codelab
 
 import android.app.Application
-import com.sap.codelab.data.repository.MemoRepositoryImpl
+import com.sap.codelab.di.appModules
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.context.startKoin
 
 /**
  * Extension of the Android Application class.
@@ -9,6 +11,9 @@ import com.sap.codelab.data.repository.MemoRepositoryImpl
 internal class App : Application() {
     override fun onCreate() {
         super.onCreate()
-        MemoRepositoryImpl.initialize(this)
+        startKoin {
+            androidContext(this@App)
+            modules(appModules)
+        }
     }
 }

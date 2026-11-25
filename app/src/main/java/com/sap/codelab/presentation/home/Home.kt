@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.Menu
 import android.view.MenuItem
-import androidx.lifecycle.ViewModelProvider
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import androidx.lifecycle.coroutineScope
 import com.sap.codelab.R
 import com.sap.codelab.databinding.ActivityHomeBinding
@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 internal class Home : AppCompatActivity() {
 
     private lateinit var binding: ActivityHomeBinding
-    private lateinit var model: HomeViewModel
+    private val model: HomeViewModel by viewModel()
     private lateinit var menuItemShowAll: MenuItem
     private lateinit var menuItemShowOpen: MenuItem
 
@@ -32,7 +32,6 @@ internal class Home : AppCompatActivity() {
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
-        model = ViewModelProvider(this)[HomeViewModel::class.java]
 
         // Setup the adapter and the recycler view
         setupRecyclerView(initializeAdapter())

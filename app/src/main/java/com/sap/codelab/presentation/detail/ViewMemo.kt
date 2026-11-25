@@ -2,7 +2,7 @@ package com.sap.codelab.presentation.detail
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import androidx.lifecycle.lifecycleScope
 import com.sap.codelab.databinding.ActivityViewMemoBinding
 import com.sap.codelab.domain.model.Memo
@@ -16,6 +16,7 @@ internal const val BUNDLE_MEMO_ID: String = "memoId"
 internal class ViewMemo : AppCompatActivity() {
 
     private lateinit var binding: ActivityViewMemoBinding
+    private val model: ViewMemoViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,7 +24,6 @@ internal class ViewMemo : AppCompatActivity() {
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
         // Initialize views with the passed memo id
-        val model = ViewModelProvider(this)[ViewMemoViewModel::class.java]
         if (savedInstanceState == null) {
             // Observe the memo state flow for changes
             lifecycleScope.launch {

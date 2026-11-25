@@ -2,15 +2,20 @@ package com.sap.codelab.presentation.create
 
 import androidx.lifecycle.ViewModel
 import com.sap.codelab.domain.model.Memo
-import com.sap.codelab.data.repository.MemoRepositoryImpl
-import com.sap.codelab.utils.coroutines.ScopeProvider
+import com.sap.codelab.domain.repository.MemoRepository
 import com.sap.codelab.utils.extensions.empty
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 /**
  * ViewModel for matching CreateMemo view. Handles user interactions.
+ *
+ * @param applicationScope - used for saving, so the save completes even though the activity finishes right away.
  */
-internal class CreateMemoViewModel : ViewModel() {
+internal class CreateMemoViewModel(
+    private val repository: MemoRepository,
+    private val applicationScope: CoroutineScope,
+) : ViewModel() {
 
     private var memo = Memo(title = String.empty(), description = String.empty())
 
@@ -18,8 +23,8 @@ internal class CreateMemoViewModel : ViewModel() {
      * Saves the memo in it's current state.
      */
     fun saveMemo() {
-        ScopeProvider.application.launch {
-            MemoRepositoryImpl.saveMemo(memo)
+        applicationScope.launch {
+            repository.saveMemo(memo)
         }
     }
 

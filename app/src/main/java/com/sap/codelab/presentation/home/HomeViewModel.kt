@@ -2,7 +2,7 @@ package com.sap.codelab.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sap.codelab.data.repository.MemoRepositoryImpl
+import com.sap.codelab.domain.repository.MemoRepository
 import com.sap.codelab.domain.model.Memo
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
  * ViewModel for the Home Activity.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class HomeViewModel : ViewModel() {
+internal class HomeViewModel(private val repository: MemoRepository) : ViewModel() {
 
     private val showAll = MutableStateFlow(false)
 
@@ -24,7 +24,7 @@ internal class HomeViewModel : ViewModel() {
      * The memos to display. Updates automatically when the filter or the underlying data changes.
      */
     val memos: StateFlow<List<Memo>> = showAll
-        .flatMapLatest { all -> if (all) MemoRepositoryImpl.observeAll() else MemoRepositoryImpl.observeOpen() }
+        .flatMapLatest { all -> if (all) repository.observeAll() else repository.observeOpen() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     /**
@@ -51,7 +51,7 @@ internal class HomeViewModel : ViewModel() {
         // We'll only forward the update if the memo has been checked, since we don't offer to uncheck memos right now
         if (!isChecked) return
         viewModelScope.launch {
-            MemoRepositoryImpl.saveMemo(memo.copy(isDone = true))
+            repository.saveMemo(memo.copy(isDone = true))
         }
     }
 }
