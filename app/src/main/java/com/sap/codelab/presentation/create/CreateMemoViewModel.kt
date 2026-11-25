@@ -1,8 +1,8 @@
-package com.sap.codelab.view.create
+package com.sap.codelab.presentation.create
 
 import androidx.lifecycle.ViewModel
-import com.sap.codelab.model.Memo
-import com.sap.codelab.repository.Repository
+import com.sap.codelab.domain.model.Memo
+import com.sap.codelab.data.repository.Repository
 import com.sap.codelab.utils.coroutines.ScopeProvider
 import com.sap.codelab.utils.extensions.empty
 import kotlinx.coroutines.launch

@@ -1,10 +1,10 @@
-package com.sap.codelab.repository
+package com.sap.codelab.data.local
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.sap.codelab.model.Memo
+import com.sap.codelab.domain.model.Memo
 
 /**
  * The Dao representation of a Memo.
