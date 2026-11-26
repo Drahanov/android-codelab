@@ -7,6 +7,8 @@ import com.sap.codelab.domain.model.Memo
 import com.sap.codelab.domain.permission.PermissionChecker
 import com.sap.codelab.domain.permission.ReminderPermission
 import com.sap.codelab.domain.repository.MemoRepository
+import com.sap.codelab.domain.usecase.MarkMemoDoneUseCase
+import com.sap.codelab.domain.usecase.RestoreGeofencesUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -38,14 +40,17 @@ internal data class HomeUiState(
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class HomeViewModel(
     private val repository: MemoRepository,
+    private val markMemoDone: MarkMemoDoneUseCase,
+    private val restoreGeofences: RestoreGeofencesUseCase,
     private val permissionChecker: PermissionChecker,
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     // Kept in SavedStateHandle so the filter survives process death.
     private val showAll: StateFlow<Boolean> = savedStateHandle.getStateFlow(KEY_SHOW_ALL, false)
-    private val missingPermission = MutableStateFlow(nextMissingPermission())
+    private val missingPermission = MutableStateFlow<ReminderPermission?>(null)
     private val permanentlyDenied = MutableStateFlow<ReminderPermission?>(null)
+    private var permissionsComplete = false
 
     private val memos = showAll.flatMapLatest { all ->
         if (all) repository.observeAll() else repository.observeOpen()
@@ -64,8 +69,12 @@ internal class HomeViewModel(
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5_000),
-        HomeUiState(showAll = showAll.value, missingPermission = missingPermission.value),
+        HomeUiState(showAll = showAll.value),
     )
+
+    init {
+        refreshPermissions()
+    }
 
     /**
      * Switches between showing all memos and only open (not done) memos.
@@ -79,7 +88,7 @@ internal class HomeViewModel(
      */
     fun markDone(memo: Memo) {
         viewModelScope.launch {
-            repository.saveMemo(memo.copy(isDone = true))
+            markMemoDone(memo)
         }
     }
 
@@ -87,7 +96,14 @@ internal class HomeViewModel(
      * Re-checks the permissions; call it whenever they may have changed (screen visible again, request finished).
      */
     fun refreshPermissions() {
-        missingPermission.value = nextMissingPermission()
+        val missing = nextMissingPermission()
+        missingPermission.value = missing
+        val complete = missing == null
+        if (complete && !permissionsComplete) {
+            // Permissions are (newly) complete: register memos that could not be registered before
+            viewModelScope.launch { restoreGeofences() }
+        }
+        permissionsComplete = complete
     }
 
     /**

@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sap.codelab.domain.model.Coordinates
 import com.sap.codelab.domain.model.Memo
-import com.sap.codelab.domain.repository.MemoRepository
+import com.sap.codelab.domain.usecase.SaveMemoUseCase
 import com.sap.codelab.presentation.common.getCoordinates
 import com.sap.codelab.presentation.common.setCoordinates
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,7 +33,7 @@ internal data class CreateMemoUiState(
  * ViewModel for matching CreateMemo view. Handles user interactions.
  */
 internal class CreateMemoViewModel(
-    private val repository: MemoRepository,
+    private val saveMemo: SaveMemoUseCase,
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -66,7 +66,7 @@ internal class CreateMemoViewModel(
         if (!isValid) return
 
         viewModelScope.launch {
-            repository.saveMemo(Memo(title = title, description = description, location = current.location))
+            saveMemo(Memo(title = title, description = description, location = current.location))
             _uiState.update { it.copy(isSaving = false, isSaved = true) }
         }
     }

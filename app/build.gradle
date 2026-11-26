@@ -51,6 +51,7 @@ ext {
     lifecycleVersion = '2.9.3'
     koinVersion = '4.1.0'
     osmdroidVersion = '6.1.20'
+    playServicesLocationVersion = '21.3.0'
 }
 
 dependencies {
@@ -76,6 +77,10 @@ dependencies {
 
     //Maps (OpenStreetMap), only used behind presentation.map.LocationPickerMap
     implementation "org.osmdroid:osmdroid-android:$osmdroidVersion"
+
+    //Geofencing, only used behind domain.location.GeofenceRegistrar
+    implementation "com.google.android.gms:play-services-location:$playServicesLocationVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$kotlinCoroutinesVersion"
 
     //Dependency injection
     implementation "io.insert-koin:koin-android:$koinVersion"

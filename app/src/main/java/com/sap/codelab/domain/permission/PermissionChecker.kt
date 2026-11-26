@@ -25,4 +25,9 @@ internal interface PermissionChecker {
     fun missingReminderPermissions(): List<ReminderPermission>
 
     fun hasPreciseLocation(): Boolean
+
+    /**
+     * @return true if location geofences can be registered (precise location, and background location where needed).
+     */
+    fun canMonitorGeofences(): Boolean
 }

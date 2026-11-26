@@ -19,6 +19,9 @@ internal class AndroidPermissionChecker(private val context: Context) : Permissi
 
     override fun hasPreciseLocation(): Boolean = isGranted(ReminderPermission.PRECISE_LOCATION)
 
+    override fun canMonitorGeofences(): Boolean =
+        isGranted(ReminderPermission.PRECISE_LOCATION) && isGranted(ReminderPermission.BACKGROUND_LOCATION)
+
     private fun isGranted(permission: ReminderPermission): Boolean =
         permission.manifestPermissions().all { granted(it) } && when (permission) {
             // Coarse is requested together with fine (required since Android 12), but only fine counts

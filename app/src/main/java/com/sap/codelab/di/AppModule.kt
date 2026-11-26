@@ -8,7 +8,12 @@ import com.sap.codelab.data.repository.MemoRepositoryImpl
 import com.sap.codelab.domain.repository.MemoRepository
 import com.sap.codelab.presentation.create.CreateMemoViewModel
 import com.sap.codelab.presentation.detail.ViewMemoViewModel
+import com.sap.codelab.domain.location.GeofenceRegistrar
 import com.sap.codelab.domain.permission.PermissionChecker
+import com.sap.codelab.domain.usecase.MarkMemoDoneUseCase
+import com.sap.codelab.domain.usecase.RestoreGeofencesUseCase
+import com.sap.codelab.domain.usecase.SaveMemoUseCase
+import com.sap.codelab.platform.geofence.PlayServicesGeofenceRegistrar
 import com.sap.codelab.platform.map.OsmLocationPickerMap
 import com.sap.codelab.platform.permission.AndroidPermissionChecker
 import com.sap.codelab.presentation.home.HomeViewModel
@@ -31,6 +36,12 @@ internal val dataModule = module {
     singleOf(::MemoRepositoryImpl) { bind<MemoRepository>() }
 }
 
+internal val domainModule = module {
+    factoryOf(::SaveMemoUseCase)
+    factoryOf(::MarkMemoDoneUseCase)
+    factoryOf(::RestoreGeofencesUseCase)
+}
+
 internal val presentationModule = module {
     viewModelOf(::HomeViewModel)
     viewModelOf(::ViewMemoViewModel)
@@ -44,6 +55,7 @@ internal val presentationModule = module {
 internal val platformModule = module {
     factoryOf(::OsmLocationPickerMap) { bind<LocationPickerMap>() }
     singleOf(::AndroidPermissionChecker) { bind<PermissionChecker>() }
+    singleOf(::PlayServicesGeofenceRegistrar) { bind<GeofenceRegistrar>() }
 }
 
-internal val appModules = listOf(dataModule, presentationModule, platformModule)
+internal val appModules = listOf(dataModule, domainModule, presentationModule, platformModule)
