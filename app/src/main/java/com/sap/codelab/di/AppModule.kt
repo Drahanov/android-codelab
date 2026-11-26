@@ -9,7 +9,10 @@ import com.sap.codelab.domain.repository.MemoRepository
 import com.sap.codelab.presentation.create.CreateMemoViewModel
 import com.sap.codelab.presentation.detail.ViewMemoViewModel
 import com.sap.codelab.domain.location.GeofenceRegistrar
+import com.sap.codelab.domain.notification.MemoNotifier
 import com.sap.codelab.domain.permission.PermissionChecker
+import com.sap.codelab.domain.usecase.OnMemoLocationReachedUseCase
+import com.sap.codelab.platform.notification.AndroidMemoNotifier
 import com.sap.codelab.domain.usecase.MarkMemoDoneUseCase
 import com.sap.codelab.domain.usecase.RestoreGeofencesUseCase
 import com.sap.codelab.domain.usecase.SaveMemoUseCase
@@ -40,6 +43,7 @@ internal val domainModule = module {
     factoryOf(::SaveMemoUseCase)
     factoryOf(::MarkMemoDoneUseCase)
     factoryOf(::RestoreGeofencesUseCase)
+    factoryOf(::OnMemoLocationReachedUseCase)
 }
 
 internal val presentationModule = module {
@@ -56,6 +60,7 @@ internal val platformModule = module {
     factoryOf(::OsmLocationPickerMap) { bind<LocationPickerMap>() }
     singleOf(::AndroidPermissionChecker) { bind<PermissionChecker>() }
     singleOf(::PlayServicesGeofenceRegistrar) { bind<GeofenceRegistrar>() }
+    singleOf(::AndroidMemoNotifier) { bind<MemoNotifier>() }
 }
 
 internal val appModules = listOf(dataModule, domainModule, presentationModule, platformModule)

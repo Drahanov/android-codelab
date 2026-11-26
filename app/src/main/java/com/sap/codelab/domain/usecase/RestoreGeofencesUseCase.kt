@@ -14,7 +14,7 @@ internal class RestoreGeofencesUseCase(
 ) {
     suspend operator fun invoke() {
         repository.observeOpen().first().forEach { memo ->
-            memo.location?.let { geofenceRegistrar.register(memo.id, it) }
+            memo.location?.let { geofenceRegistrar.register(memo.id, it, notifyIfInside = false) }
         }
     }
 }

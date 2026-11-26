@@ -39,7 +39,7 @@ internal class PlayServicesGeofenceRegistrar(
     }
 
     @SuppressLint("MissingPermission") // checked via permissionChecker
-    override suspend fun register(memoId: Long, location: Coordinates): Boolean {
+    override suspend fun register(memoId: Long, location: Coordinates, notifyIfInside: Boolean): Boolean {
         if (!permissionChecker.canMonitorGeofences()) {
             Log.w(TAG, "Not registering memo $memoId: location permissions missing")
             return false
@@ -51,8 +51,7 @@ internal class PlayServicesGeofenceRegistrar(
             .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
             .build()
         val request = GeofencingRequest.Builder()
-            // Also remind if the user is already inside when the memo is saved
-            .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+            .setInitialTrigger(if (notifyIfInside) GeofencingRequest.INITIAL_TRIGGER_ENTER else 0)
             .addGeofence(geofence)
             .build()
         return try {

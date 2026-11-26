@@ -26,4 +26,6 @@
     <string name="permission_background_option_fallback">Allow all the time</string>
     <string name="action_continue">Continue</string>
     <string name="action_not_now">Not now</string>
+    <string name="notification_channel_reminders">Location reminders</string>
+    <string name="notification_channel_reminders_description">Shown when you reach the location of a memo</string>
 </resources>

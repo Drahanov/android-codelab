@@ -16,9 +16,11 @@ internal interface GeofenceRegistrar {
     /**
      * Starts watching a [REMINDER_RADIUS_METERS] circle around [location]; replaces an existing one for the same memo.
      *
+     * @param notifyIfInside - also trigger right away if the user is already inside the circle. Use it for new memos,
+     *                         not when registering existing ones again (would remind on every app start).
      * @return true if registered; false if not possible right now (missing permission, location turned off, limit reached).
      */
-    suspend fun register(memoId: Long, location: Coordinates): Boolean
+    suspend fun register(memoId: Long, location: Coordinates, notifyIfInside: Boolean): Boolean
 
     /**
      * Stops watching the location of the given memo. Does nothing if it is not watched.

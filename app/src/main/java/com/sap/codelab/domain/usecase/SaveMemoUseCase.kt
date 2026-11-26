@@ -16,7 +16,7 @@ internal class SaveMemoUseCase(
         val location = memo.location
         if (location != null && !memo.isDone) {
             // If this fails (e.g. permission missing), RestoreGeofencesUseCase registers it later
-            geofenceRegistrar.register(id, location)
+            geofenceRegistrar.register(id, location, notifyIfInside = true)
         }
     }
 }
