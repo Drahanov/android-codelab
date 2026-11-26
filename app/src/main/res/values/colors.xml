@@ -6,4 +6,5 @@
     <color name="white">#FFFFFF</color>
     <color name="hintBackground">#B3000000</color>
     <color name="error">#D32F2F</color>
+    <color name="bannerBackground">#FFF3E0</color>
 </resources>

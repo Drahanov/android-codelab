@@ -16,4 +16,14 @@
     <string name="change_location">Change location</string>
     <string name="no_location">No location selected</string>
     <string name="memo_location_empty_error">Please choose a location for this memo</string>
+    <string name="permission_precise_location">Allow precise location, so memos can remind you when you reach their place.</string>
+    <string name="permission_notifications">Allow notifications, so you can see the location reminders.</string>
+    <string name="permission_background_location">Allow location access all the time, so reminders also work while the app is closed.</string>
+    <string name="permission_allow">Allow</string>
+    <string name="permission_open_settings">Settings</string>
+    <string name="permission_background_title">Location in the background</string>
+    <string name="permission_background_rationale">To remind you while the app is closed, the app needs your location in the background. On the next screen, choose \"%1$s\".</string>
+    <string name="permission_background_option_fallback">Allow all the time</string>
+    <string name="action_continue">Continue</string>
+    <string name="action_not_now">Not now</string>
 </resources>

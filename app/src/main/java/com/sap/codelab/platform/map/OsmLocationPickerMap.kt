@@ -1,7 +1,9 @@
 package com.sap.codelab.platform.map
 
+import android.Manifest
 import android.content.Context
 import android.view.ViewGroup
+import androidx.annotation.RequiresPermission
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
@@ -15,6 +17,8 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import java.io.File
 
 /**
@@ -24,6 +28,7 @@ internal class OsmLocationPickerMap : LocationPickerMap {
 
     private var mapView: MapView? = null
     private var marker: Marker? = null
+    private var userLocation: MyLocationNewOverlay? = null
     private var onTap: ((Coordinates) -> Unit)? = null
 
     override fun attach(container: ViewGroup, lifecycleOwner: LifecycleOwner) {
@@ -45,12 +50,22 @@ internal class OsmLocationPickerMap : LocationPickerMap {
         mapView = map
 
         lifecycleOwner.lifecycle.addObserver(object : DefaultLifecycleObserver {
-            override fun onResume(owner: LifecycleOwner) = map.onResume()
-            override fun onPause(owner: LifecycleOwner) = map.onPause()
+            override fun onResume(owner: LifecycleOwner) {
+                map.onResume()
+                userLocation?.enableMyLocation()
+            }
+
+            override fun onPause(owner: LifecycleOwner) {
+                // Stops location updates while the screen is not visible
+                userLocation?.disableMyLocation()
+                map.onPause()
+            }
+
             override fun onDestroy(owner: LifecycleOwner) {
                 map.onDetach()
                 mapView = null
                 marker = null
+                userLocation = null
             }
         })
     }
@@ -79,6 +94,26 @@ internal class OsmLocationPickerMap : LocationPickerMap {
         map.invalidate()
     }
 
+    @RequiresPermission(anyOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
+    override fun showUserLocation(centerOnFirstFix: Boolean) {
+        val map = mapView ?: return
+        if (userLocation != null) return
+        val overlay = MyLocationNewOverlay(GpsMyLocationProvider(map.context), map)
+        overlay.enableMyLocation()
+        if (centerOnFirstFix) {
+            // Runs on a background thread once the first position is known
+            overlay.runOnFirstFix {
+                val position = overlay.myLocation ?: return@runOnFirstFix
+                map.post {
+                    map.controller.setZoom(USER_LOCATION_ZOOM)
+                    map.controller.animateTo(position)
+                }
+            }
+        }
+        map.overlays.add(overlay)
+        userLocation = overlay
+    }
+
     override fun setOnMapTapListener(listener: (Coordinates) -> Unit) {
         onTap = listener
     }
@@ -86,6 +121,8 @@ internal class OsmLocationPickerMap : LocationPickerMap {
     private fun Coordinates.toGeoPoint() = GeoPoint(latitude, longitude)
 
     private companion object {
+        const val USER_LOCATION_ZOOM = 16.0
+
         /**
          * osmdroid requires a user agent (OSM tile usage policy) and a cache location.
          * App-private storage is used, so no storage permission is needed.

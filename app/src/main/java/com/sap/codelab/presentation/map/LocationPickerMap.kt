@@ -26,6 +26,13 @@ internal interface LocationPickerMap {
     fun showMarker(coordinates: Coordinates?)
 
     /**
+     * Shows the user's current position. Requires the location permission.
+     *
+     * @param centerOnFirstFix - moves the camera to the user as soon as the position is known.
+     */
+    fun showUserLocation(centerOnFirstFix: Boolean)
+
+    /**
      * Called with the tapped point whenever the user taps the map.
      */
     fun setOnMapTapListener(listener: (Coordinates) -> Unit)

@@ -10,6 +10,7 @@ import com.sap.codelab.R
 import com.sap.codelab.presentation.common.setupEdgeToEdge
 import com.sap.codelab.databinding.ActivityPickLocationBinding
 import com.sap.codelab.domain.model.Coordinates
+import com.sap.codelab.domain.permission.PermissionChecker
 import com.sap.codelab.presentation.common.collectWhenStarted
 import com.sap.codelab.presentation.common.putCoordinates
 import com.sap.codelab.presentation.map.LocationPickerMap
@@ -28,6 +29,7 @@ internal class PickLocation : AppCompatActivity() {
     private lateinit var binding: ActivityPickLocationBinding
     private val model: PickLocationViewModel by viewModel()
     private val map: LocationPickerMap by inject()
+    private val permissionChecker: PermissionChecker by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,6 +43,10 @@ internal class PickLocation : AppCompatActivity() {
         map.setOnMapTapListener(model::select)
         val initial = model.selected.value
         map.moveTo(initial ?: DEFAULT_CENTER, if (initial != null) SELECTED_ZOOM else DEFAULT_ZOOM)
+        if (permissionChecker.hasPreciseLocation()) {
+            // Without a selection, start where the user is
+            map.showUserLocation(centerOnFirstFix = initial == null && savedInstanceState == null)
+        }
 
         collectWhenStarted(model.selected) { selected ->
             map.showMarker(selected)

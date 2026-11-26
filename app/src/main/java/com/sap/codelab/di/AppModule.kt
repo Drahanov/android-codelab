@@ -8,7 +8,9 @@ import com.sap.codelab.data.repository.MemoRepositoryImpl
 import com.sap.codelab.domain.repository.MemoRepository
 import com.sap.codelab.presentation.create.CreateMemoViewModel
 import com.sap.codelab.presentation.detail.ViewMemoViewModel
+import com.sap.codelab.domain.permission.PermissionChecker
 import com.sap.codelab.platform.map.OsmLocationPickerMap
+import com.sap.codelab.platform.permission.AndroidPermissionChecker
 import com.sap.codelab.presentation.home.HomeViewModel
 import com.sap.codelab.presentation.map.LocationPickerMap
 import com.sap.codelab.presentation.picklocation.PickLocationViewModel
@@ -41,6 +43,7 @@ internal val presentationModule = module {
  */
 internal val platformModule = module {
     factoryOf(::OsmLocationPickerMap) { bind<LocationPickerMap>() }
+    singleOf(::AndroidPermissionChecker) { bind<PermissionChecker>() }
 }
 
 internal val appModules = listOf(dataModule, presentationModule, platformModule)

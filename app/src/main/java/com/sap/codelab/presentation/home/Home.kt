@@ -3,6 +3,7 @@ package com.sap.codelab.presentation.home
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.Menu
@@ -11,10 +12,12 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 import com.sap.codelab.R
 import com.sap.codelab.presentation.common.setupEdgeToEdge
 import com.sap.codelab.databinding.ActivityHomeBinding
+import com.sap.codelab.domain.permission.ReminderPermission
 import com.sap.codelab.presentation.common.collectWhenStarted
 import com.sap.codelab.presentation.create.CreateMemo
 import com.sap.codelab.presentation.detail.BUNDLE_MEMO_ID
 import com.sap.codelab.presentation.detail.ViewMemo
+import com.sap.codelab.presentation.permission.ReminderPermissionRequester
 
 /**
  * The main activity of the app. Shows a list of recorded memos and lets the user add new memos.
@@ -23,6 +26,12 @@ internal class Home : AppCompatActivity() {
 
     private lateinit var binding: ActivityHomeBinding
     private val model: HomeViewModel by viewModel()
+    private val permissionRequester = ReminderPermissionRequester(
+        activity = this,
+        nextMissing = { model.nextMissingPermission() },
+        onResult = { model.refreshPermissions() },
+        onPermanentlyDenied = { model.onPermissionPermanentlyDenied(it) },
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,6 +47,19 @@ internal class Home : AppCompatActivity() {
             // Handles clicks on the FAB button > creates a new Memo
             startActivity(Intent(this@Home, CreateMemo::class.java))
         }
+        binding.contentHome.permissionButton.setOnClickListener {
+            if (model.uiState.value.openSettings) {
+                permissionRequester.openAppSettings()
+            } else {
+                permissionRequester.requestNext()
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        // The user may have changed permissions in the system settings in the meantime
+        model.refreshPermissions()
     }
 
     /**
@@ -50,9 +72,24 @@ internal class Home : AppCompatActivity() {
         )
         collectWhenStarted(model.uiState) { state ->
             adapter.submitList(state.memos)
+            renderPermissionBanner(state)
             invalidateOptionsMenu()
         }
         return adapter
+    }
+
+    private fun renderPermissionBanner(state: HomeUiState) {
+        binding.contentHome.run {
+            permissionBanner.isVisible = state.missingPermission != null
+            permissionMessage.setText(
+                when (state.missingPermission) {
+                    ReminderPermission.PRECISE_LOCATION, null -> R.string.permission_precise_location
+                    ReminderPermission.NOTIFICATIONS -> R.string.permission_notifications
+                    ReminderPermission.BACKGROUND_LOCATION -> R.string.permission_background_location
+                }
+            )
+            permissionButton.setText(if (state.openSettings) R.string.permission_open_settings else R.string.permission_allow)
+        }
     }
 
     /**
