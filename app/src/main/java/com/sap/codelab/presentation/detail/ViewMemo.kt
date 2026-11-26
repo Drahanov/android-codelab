@@ -7,7 +7,9 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 import com.sap.codelab.R
 import com.sap.codelab.databinding.ActivityViewMemoBinding
 import com.sap.codelab.domain.model.Memo
+import androidx.core.view.isVisible
 import com.sap.codelab.presentation.common.collectWhenStarted
+import com.sap.codelab.presentation.common.toDisplayString
 
 internal const val BUNDLE_MEMO_ID: String = "memoId"
 
@@ -45,8 +47,10 @@ internal class ViewMemo : AppCompatActivity() {
         binding.contentCreateMemo.run {
             memoTitle.setText(memo.title)
             memoDescription.setText(memo.description)
+            memoLocation.text = memo.location?.toDisplayString() ?: getString(R.string.no_location)
             memoTitle.isEnabled = false
             memoDescription.isEnabled = false
+            memoLocationButton.isVisible = false
         }
     }
 }

@@ -9,4 +9,11 @@
     <string name="memo_title_empty_error">Please provide a title for this memo</string>
     <string name="memo_text_empty_error">Please provide a memo description</string>
     <string name="memo_not_found">This memo no longer exists</string>
+    <string name="action_confirm">Confirm</string>
+    <string name="pick_location">Choose location</string>
+    <string name="pick_location_hint">Tap on the map to choose the reminder location</string>
+    <string name="choose_location">Choose location</string>
+    <string name="change_location">Change location</string>
+    <string name="no_location">No location selected</string>
+    <string name="memo_location_empty_error">Please choose a location for this memo</string>
 </resources>

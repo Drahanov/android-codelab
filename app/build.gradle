@@ -49,6 +49,7 @@ ext {
     roomVersion = '2.7.2'
     lifecycleVersion = '2.9.3'
     koinVersion = '4.1.0'
+    osmdroidVersion = '6.1.20'
 }
 
 dependencies {
@@ -71,6 +72,9 @@ dependencies {
     //Coroutines
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
+
+    //Maps (OpenStreetMap), only used behind presentation.map.LocationPickerMap
+    implementation "org.osmdroid:osmdroid-android:$osmdroidVersion"
 
     //Dependency injection
     implementation "io.insert-koin:koin-android:$koinVersion"

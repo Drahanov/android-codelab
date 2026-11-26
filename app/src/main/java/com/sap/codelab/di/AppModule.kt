@@ -8,9 +8,13 @@ import com.sap.codelab.data.repository.MemoRepositoryImpl
 import com.sap.codelab.domain.repository.MemoRepository
 import com.sap.codelab.presentation.create.CreateMemoViewModel
 import com.sap.codelab.presentation.detail.ViewMemoViewModel
+import com.sap.codelab.platform.map.OsmLocationPickerMap
 import com.sap.codelab.presentation.home.HomeViewModel
+import com.sap.codelab.presentation.map.LocationPickerMap
+import com.sap.codelab.presentation.picklocation.PickLocationViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.bind
+import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
@@ -29,6 +33,14 @@ internal val presentationModule = module {
     viewModelOf(::HomeViewModel)
     viewModelOf(::ViewMemoViewModel)
     viewModelOf(::CreateMemoViewModel)
+    viewModelOf(::PickLocationViewModel)
 }
 
-internal val appModules = listOf(dataModule, presentationModule)
+/**
+ * Implementations backed by third-party libraries, bound to our own interfaces.
+ */
+internal val platformModule = module {
+    factoryOf(::OsmLocationPickerMap) { bind<LocationPickerMap>() }
+}
+
+internal val appModules = listOf(dataModule, presentationModule, platformModule)
