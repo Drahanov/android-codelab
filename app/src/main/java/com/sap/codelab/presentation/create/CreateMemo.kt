@@ -7,6 +7,7 @@ import android.view.MenuItem
 import androidx.core.content.ContextCompat
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import com.sap.codelab.R
+import com.sap.codelab.presentation.common.setupEdgeToEdge
 import com.sap.codelab.databinding.ActivityCreateMemoBinding
 import com.sap.codelab.presentation.common.collectWhenStarted
 import com.sap.codelab.presentation.common.toDisplayString
@@ -27,6 +28,7 @@ internal class CreateMemo : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityCreateMemoBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setupEdgeToEdge(binding.root, binding.appBar)
         setSupportActionBar(binding.toolbar)
         binding.contentCreateMemo.memoLocationButton.setOnClickListener {
             pickLocation.launch(model.uiState.value.location)

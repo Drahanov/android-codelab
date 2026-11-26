@@ -9,6 +9,7 @@ import android.view.Menu
 import android.view.MenuItem
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import com.sap.codelab.R
+import com.sap.codelab.presentation.common.setupEdgeToEdge
 import com.sap.codelab.databinding.ActivityHomeBinding
 import com.sap.codelab.presentation.common.collectWhenStarted
 import com.sap.codelab.presentation.create.CreateMemo
@@ -27,6 +28,7 @@ internal class Home : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setupEdgeToEdge(binding.root, binding.appBar)
         setSupportActionBar(binding.toolbar)
 
         // Setup the adapter and the recycler view

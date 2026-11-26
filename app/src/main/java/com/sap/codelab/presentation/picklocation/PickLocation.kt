@@ -7,6 +7,7 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import com.sap.codelab.R
+import com.sap.codelab.presentation.common.setupEdgeToEdge
 import com.sap.codelab.databinding.ActivityPickLocationBinding
 import com.sap.codelab.domain.model.Coordinates
 import com.sap.codelab.presentation.common.collectWhenStarted
@@ -32,6 +33,7 @@ internal class PickLocation : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityPickLocationBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setupEdgeToEdge(binding.root, binding.appBar)
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 

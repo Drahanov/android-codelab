@@ -5,6 +5,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import com.sap.codelab.R
+import com.sap.codelab.presentation.common.setupEdgeToEdge
 import com.sap.codelab.databinding.ActivityViewMemoBinding
 import com.sap.codelab.domain.model.Memo
 import androidx.core.view.isVisible
@@ -25,6 +26,7 @@ internal class ViewMemo : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityViewMemoBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setupEdgeToEdge(binding.root, binding.appBar)
         setSupportActionBar(binding.toolbar)
         collectWhenStarted(model.uiState) { state ->
             when (state) {
